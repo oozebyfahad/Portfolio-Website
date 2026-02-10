@@ -27,3 +27,5 @@ Desktop.ini
 
 # other
 *.tgz
+.vercel
+.env*.local

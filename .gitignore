@@ -29,3 +29,4 @@ Desktop.ini
 *.tgz
 .vercel
 .env*.local
+%TEMP%/

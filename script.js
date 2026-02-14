@@ -184,6 +184,12 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
     v.loop = true;
     if (!v.hasAttribute('autoplay')) v.setAttribute('autoplay', '');
     if (!v.hasAttribute('playsinline')) v.setAttribute('playsinline', '');
+    // Hard reset loop for browsers that ignore the loop attribute on some devices
+    v.addEventListener('ended', () => {
+      v.currentTime = 0;
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    });
   });
 
   if ('IntersectionObserver' in window) {
@@ -207,4 +213,25 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
       if (p && typeof p.catch === 'function') p.catch(() => {});
     });
   }
+})();
+
+// Featured long-form video: loop instead of ending on black
+(function() {
+  const featured = document.getElementById('featuredVideo');
+  if (!featured) return;
+  featured.muted = true;
+  if (!featured.hasAttribute('autoplay')) featured.setAttribute('autoplay', '');
+  if (!featured.hasAttribute('playsinline')) featured.setAttribute('playsinline', '');
+  featured.loop = true;
+  featured.addEventListener('ended', () => {
+    featured.currentTime = 0;
+    const p = featured.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  });
+  const autoPlay = () => {
+    const p = featured.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  };
+  if (featured.readyState >= 2) autoPlay();
+  else featured.addEventListener('canplay', autoPlay, { once: true });
 })();

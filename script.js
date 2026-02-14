@@ -19,7 +19,7 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
   });
   
   // Basic "active" state for navbar based on scroll
-  const sections = ['#home', '#about', '#tools', '#projects', '#contact'].map(id =>
+  const sections = ['#home', '#about', '#tools', '#contact'].map(id =>
     document.querySelector(id)
   );
   const navLinks = document.querySelectorAll('.nav-link');
@@ -85,8 +85,9 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
   // Hero dimming removed to keep portrait section clear
 
   // About section slide-up over hero on scroll
-  let aboutOffset = Math.round(window.innerHeight * 0.6);
-  let toolsOffset = Math.round(window.innerHeight * 0.5);
+  // reduce offsets so the slide-up is less aggressive and feels smoother
+  let aboutOffset = Math.round(window.innerHeight * 0.45);
+  let toolsOffset = Math.round(window.innerHeight * 0.35);
   let rafId = null;
 
   function updateAboutSlide() {
@@ -121,8 +122,8 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
   if (aboutSection && hero) {
     window.addEventListener('scroll', requestAboutSlide, { passive: true });
     window.addEventListener('resize', () => {
-      aboutOffset = Math.round(window.innerHeight * 0.6);
-      toolsOffset = Math.round(window.innerHeight * 0.5);
+      aboutOffset = Math.round(window.innerHeight * 0.45);
+      toolsOffset = Math.round(window.innerHeight * 0.35);
       requestAboutSlide();
     });
     updateAboutSlide();
@@ -156,3 +157,40 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
 
     projectVideos.forEach(video => videoObserver.observe(video));
   }
+
+// Reels modal playback: open YouTube embed in modal when reel card is clicked
+// Reels autoplay management: keep autoplaying while visible, pause when offscreen
+(function() {
+  const reelVideos = document.querySelectorAll('.reel-thumb');
+  if (!reelVideos || !reelVideos.length) return;
+
+  // Ensure videos have autoplay & loop & muted attributes (browsers require muted for autoplay)
+  reelVideos.forEach(v => {
+    v.muted = true;
+    v.loop = true;
+    if (!v.hasAttribute('autoplay')) v.setAttribute('autoplay', '');
+    if (!v.hasAttribute('playsinline')) v.setAttribute('playsinline', '');
+  });
+
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          const p = video.play();
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    reelVideos.forEach(v => obs.observe(v));
+  } else {
+    // fallback: attempt to play all
+    reelVideos.forEach(video => {
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    });
+  }
+})();

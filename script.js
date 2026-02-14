@@ -82,6 +82,20 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
     slideUpSections.forEach(sec => sec.classList.add('is-visible'));
   }
 
+  // Reviews slide-left observer
+  const reviewCards = document.querySelectorAll('.js-slide-left');
+  if ('IntersectionObserver' in window && reviewCards.length) {
+    const reviewObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('is-visible');
+      });
+    }, { threshold: 0.25 });
+
+    reviewCards.forEach(card => reviewObserver.observe(card));
+  } else {
+    reviewCards.forEach(card => card.classList.add('is-visible'));
+  }
+
   // Hero dimming removed to keep portrait section clear
 
   // About section slide-up over hero on scroll

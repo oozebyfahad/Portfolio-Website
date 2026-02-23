@@ -235,3 +235,72 @@ document.querySelectorAll('.nav-link, .btn-primary, .bottom-nav-link').forEach(l
   if (featured.readyState >= 2) autoPlay();
   else featured.addEventListener('canplay', autoPlay, { once: true });
 })();
+
+// Custom cursor (desktop only): liquid blob cursor
+(function() {
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!dot || !ring) return;
+
+  const supportsCustomCursor =
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!supportsCustomCursor) return;
+
+  const root = document.documentElement;
+  root.classList.add('custom-cursor-active');
+
+  let mx = window.innerWidth / 2;
+  let my = window.innerHeight / 2;
+  let rx = mx;
+  let ry = my;
+  let vx = 0;
+  let vy = 0;
+
+  const hoverSelectors = [
+    'a',
+    'button',
+    '.reel-card',
+    '.project-feature__tool',
+    '.bottom-nav-link',
+    '.passion-projects-callout__link',
+    '[role="button"]'
+  ].join(',');
+
+  function setHoverState(target) {
+    const isHover = !!(target && target.closest && target.closest(hoverSelectors));
+    root.classList.toggle('cursor-hover', isHover);
+  }
+
+  window.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+  }, { passive: true });
+
+  document.addEventListener('mouseover', e => setHoverState(e.target));
+  document.addEventListener('mouseout', e => {
+    if (!e.relatedTarget) root.classList.remove('cursor-hover');
+  });
+
+  function tick() {
+    const px = rx;
+    const py = ry;
+    rx += (mx - rx) * 0.17;
+    ry += (my - ry) * 0.17;
+    vx = rx - px;
+    vy = ry - py;
+
+    const speed = Math.min(16, Math.hypot(vx, vy));
+    const stretch = 1 + speed * 0.015;
+    const squash = 1 - speed * 0.006;
+    const angle = Math.atan2(vy, vx) * (180 / Math.PI);
+
+    ring.style.transform =
+      `translate(${rx}px, ${ry}px) translate(-50%, -50%) rotate(${angle}deg) scale(${stretch}, ${squash})`;
+    window.requestAnimationFrame(tick);
+  }
+
+  tick();
+})();
